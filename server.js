@@ -148,7 +148,6 @@ app.post('/login', (req, res) => {
         if (error) {
 
         } else {
-            console.log(data);
             if (data > 0) {
                 var myToken = jwt.sign({ username: 'alexesca' }, config.secret)
                 res.json(myToken);
@@ -159,6 +158,19 @@ app.post('/login', (req, res) => {
     });
 });
 
+
+app.post('/teachers/add/new', (req, res) => {
+    console.log(req.body);
+    Teachers.create(
+        req.body
+    , (error, data) => {
+        if(error){
+            res.sendStatus(500);
+        }else{
+            res.sendStatus(200);
+        }
+    });
+});
 
 app.listen(app.get('port'), function () {
     console.log('Node app is running on port', app.get('port'));

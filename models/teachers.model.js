@@ -4,8 +4,13 @@ var Schema = mongoose.Schema;
 var structure = new Schema({
     firstname: { type: String, default: null},
     lastname: { type: String, default: null},
-    emails: { type: String, default: null},
-    phone: { type: String, default: null},
+    email: { type: String, default: null},
+    phonenumber: { type: String, default: null},
+    address1:  { type: String, default: null},
+    address2:  { type: String, default: null},
+    city:  { type: String, default: null},
+    state:  { type: String, default: null},
+    zipCode:  { type: String, default: null},
     skills: [{ 
         name: { type: String, default: null}
      }]

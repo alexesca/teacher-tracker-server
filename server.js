@@ -143,7 +143,6 @@ app.post('/login', (req, res) => {
 
     var email = req.body.email;
     var password = req.body.password;
-
     Teachers.count({ "email": email, "password": password }, (error, data) => {
         if (error) {
 
@@ -160,14 +159,14 @@ app.post('/login', (req, res) => {
 
 
 app.post('/teachers/add/new', (req, res) => {
-    console.log(req.body);
+    console.log(req.body,null, '\t');
     Teachers.create(
         req.body
     , (error, data) => {
         if(error){
-            res.sendStatus(500);
+            res.json({error: "OK"});
         }else{
-            res.sendStatus(200);
+            res.json({error: "ERROR"});
         }
     });
 });

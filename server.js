@@ -141,16 +141,23 @@ app.get('/get/teachers/by/skills/:criteria/:array', (req, res) => {
 
 app.post('/login', (req, res) => {
 
-    var email = req.body.email;
+    var username = req.body.username;
     var password = req.body.password;
-    Teachers.count({ "email": email, "password": password }, (error, data) => {
+    console.log(password, username);
+    if(!username || !password){
+        res.sendStatus(500);
+        return;
+    }
+    
+    Teachers.count({ "email": username, "password": password }, (error, data) => {
         if (error) {
-
+            console.log(error,8980)
         } else {
             if (data > 0) {
                 var myToken = jwt.sign({ username: 'alexesca' }, config.secret)
                 res.json(myToken);
             }else{
+                console.log(data,545345);
                 res.sendStatus(500);
             }
         }

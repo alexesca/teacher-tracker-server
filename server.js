@@ -14,6 +14,10 @@ var methodOverride = require('method-override'); // simulate DELETE and PUT (exp
 var cors = require('cors');
 var expressValidator = require('express-validator');
 
+var multer  = require('multer');
+var upload = multer({ dest: 'uploads/' });
+
+
 //Importing models
 var Teachers = require('./models/teachers.model');
 var Skills = require('./models/skills.model');
@@ -38,7 +42,7 @@ app.set('port', (process.env.PORT || 8080));
 app.use(express.static(__dirname + '/public'));
 
 
-app.use(expressJwt({ secret: config.secret }).unless({ path: ['/login'] }))
+app.use(expressJwt({ secret: config.secret }).unless({ path: ['/login','/upload/file'] }))
 app.set('superSecret', config.secret); // secret variable
 app.use(morgan('dev'));                                         // log every request to the console
 app.use(bodyParser.urlencoded({ 'extended': 'true' }));            // parse application/x-www-form-urlencoded
@@ -47,6 +51,7 @@ app.use(bodyParser.json({ type: 'application/vnd.api+json' })); // parse applica
 app.use(expressValidator());
 app.use(methodOverride());
 app.use(cors());
+
 
 //Solves CROSS errors
 app.use(function (req, res, next) {
@@ -148,7 +153,7 @@ app.post('/login', (req, res) => {
         res.sendStatus(500);
         return;
     }
-    
+
     Teachers.count({ "email": username, "password": password }, (error, data) => {
         if (error) {
             console.log(error,8980)
@@ -177,6 +182,38 @@ app.post('/teachers/add/new', (req, res) => {
         }
     });
 });
+
+app.get('/get/teacher/information/:id', (req, res) => {
+    var id = req.params.id;
+    Teachers.findOne({"_id": new mongoose.mongo.ObjectId(id)}, (error, data) => {
+        if(error){
+            console.log(error)
+            res.json(error);
+        }else if(data){
+            console.log(data)
+            res.json(data);
+        }else{
+            res.sendStatus(500);
+        }
+    });
+});
+
+app.delete('/delete/teacher/:id', (req, res) => {
+    var id = req.params.id;
+    Teachers.remove({"_id": new mongoose.mongo.ObjectId(id)}, (error, data) => {
+        if (error) {
+            res.json(error);
+        } else if ( data) {
+            res.json(data)
+        } else {
+            res.sendStatus(500);
+        }
+    });
+});
+
+app.post('/upload/file', upload.single('file'), function (req, res, next) {
+    console.log(req.file);
+})
 
 app.listen(app.get('port'), function () {
     console.log('Node app is running on port', app.get('port'));

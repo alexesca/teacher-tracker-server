@@ -15,7 +15,18 @@ var cors = require('cors');
 var expressValidator = require('express-validator');
 
 var multer  = require('multer');
-var upload = multer({ dest: 'uploads/' });
+var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/')
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + ' - ' + file.originalname)
+    }
+})
+
+var upload = multer({ storage: storage })
+
+//var upload = multer({ dest: 'uploads/' });
 
 
 //Importing models
@@ -42,7 +53,7 @@ app.set('port', (process.env.PORT || 8080));
 app.use(express.static(__dirname + '/public'));
 
 
-app.use(expressJwt({ secret: config.secret }).unless({ path: ['/login','/upload/file'] }))
+app.use(expressJwt({ secret: config.secret }).unless({ path: ['/login','/upload/file', new RegExp('/download/*', 'i') ]}));
 app.set('superSecret', config.secret); // secret variable
 app.use(morgan('dev'));                                         // log every request to the console
 app.use(bodyParser.urlencoded({ 'extended': 'true' }));            // parse application/x-www-form-urlencoded
@@ -171,7 +182,6 @@ app.post('/login', (req, res) => {
 
 
 app.post('/teachers/add/new', (req, res) => {
-    console.log(req.body,null, '\t');
     Teachers.create(
         req.body
     , (error, data) => {
@@ -212,8 +222,26 @@ app.delete('/delete/teacher/:id', (req, res) => {
 });
 
 app.post('/upload/file', upload.single('file'), function (req, res, next) {
-    console.log(req.file);
-})
+    var body = req.body;
+    body.skills = teachersModule.formatSkillArrayToObject(body.skills);
+    body.filename = req.file.filename;
+    console.log(req.file)
+    Teachers.create(
+            body
+            , (error, data) => {
+            if(error){
+                res.json({error: "OK"});
+            }else{
+                res.json({error: "ERROR"});
+            }
+    });
+});
+
+app.get('/download/:filename', function(req, res){
+    var filename = req.params.filename;
+    var file = __dirname + '/uploads/' + filename;
+    res.download(file); // Set disposition and send it.
+});
 
 app.listen(app.get('port'), function () {
     console.log('Node app is running on port', app.get('port'));

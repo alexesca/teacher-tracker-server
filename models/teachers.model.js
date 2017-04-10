@@ -17,7 +17,8 @@ var structure = new Schema({
             ref: 'Skill'
         },
         name: { type: String, default: null }
-    }]
+    }],
+    filename: { type: String, default: null }
 });
 
 var model = mongoose.model('Teacher', structure);

@@ -53,7 +53,7 @@ app.set('port', (process.env.PORT || 8080));
 app.use(express.static(__dirname + '/public'));
 
 
-app.use(expressJwt({ secret: config.secret }).unless({ path: ['/login','/upload/file', new RegExp('/download/*', 'i') ]}));
+app.use(expressJwt({ secret: config.secret }).unless({ path: ['/login','/upload/file', new RegExp('/download/*', 'i'), new RegExp('/update/uploaded/file', 'i') ]}));
 app.set('superSecret', config.secret); // secret variable
 app.use(morgan('dev'));                                         // log every request to the console
 app.use(bodyParser.urlencoded({ 'extended': 'true' }));            // parse application/x-www-form-urlencoded
@@ -221,6 +221,22 @@ app.delete('/delete/teacher/:id', (req, res) => {
     });
 });
 
+
+app.put('/update/teacher/:id',(req, res) => {
+    var id = req.params.id;
+    var document = req.body;
+    console.log(document,"document")
+    Teachers.updateOne({"_id": new mongoose.mongo.ObjectId(id)},document, (error, data) => {
+        if(error){
+            res.json(error);
+        }else if(data){
+            res.json(data);
+        }else{
+            res.sendStatus(500);
+        }
+    });
+});
+
 app.post('/upload/file', upload.single('file'), function (req, res, next) {
     var body = req.body;
     body.skills = teachersModule.formatSkillArrayToObject(body.skills);
@@ -235,6 +251,38 @@ app.post('/upload/file', upload.single('file'), function (req, res, next) {
                 res.json({error: "ERROR"});
             }
     });
+});
+
+
+app.post('/update/uploaded/file', upload.single('file'), function (req, res, next) {
+    var body = req.body;
+    var document = {
+        firstname: body.firstname,
+        lastname: body.lastname,
+        phonenumber: body.phonenumber,
+        email: body.email,
+        address1: body.address1,
+        address2: body.address2,
+        city: body.city,
+        state: body.state,
+        zipCode: body.zipCode,
+        skills: body.skills
+    };
+    body.skills = teachersModule.formatSkillArrayToObject(body.skills);
+    body.filename = req.file.filename;
+    var id = body.id;
+    console.log(req.body);
+    Teachers.updateOne({"_id": new mongoose.mongo.ObjectId(id)},
+        document
+        , (error, data) => {
+        if(error){
+            //console.log(error);
+            res.json({error: "OK"});
+        }else{
+            console.log(data)
+            res.json({error: "ERROR"});
+}
+});
 });
 
 app.get('/download/:filename', function(req, res){
